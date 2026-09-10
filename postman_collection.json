@@ -1,0 +1,1201 @@
+{
+  "info": {
+    "name": "Digital Banking Account & Transaction Management System (P10) - 13 Modules",
+    "description": "Postman/Hoppscotch collection organized directly by Module 1 through Module 13 matching the Christ University CIA-3 requirement document.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "customerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staffToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "aliceAccountId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "aliceSavingsAccNum",
+      "value": "1008001001",
+      "type": "string"
+    },
+    {
+      "key": "bobSavingsAccNum",
+      "value": "1008002001",
+      "type": "string"
+    },
+    {
+      "key": "newApplicantAccountId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Module 1: Customer Onboarding & KYC Capture",
+      "item": [
+        {
+          "name": "POST Customer Registration (Onboarding + KYC)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created or 409 (Already exists)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "if (pm.response.code === 201) {",
+                  "    pm.expect(json.success).to.be.true;",
+                  "    pm.expect(json.data.token).to.be.a('string');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Suresh Ramanathan\",\n  \"email\": \"suresh.ramanathan@customer.com\",\n  \"password\": \"Password@123\",\n  \"phone\": \"+91 9988112233\",\n  \"panNumber\": \"SURP1234K\",\n  \"aadhaarNumber\": \"887766554433\",\n  \"address\": \"12 Residency Road, Bangalore\",\n  \"occupation\": \"Tech Consultant\",\n  \"annualIncome\": 2100000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "POST Customer Login (Get Customer JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('customerToken', json.data.token);",
+                  "pm.test('Customer JWT saved', function () {",
+                  "    pm.expect(json.data.user.role).to.eql('CUSTOMER');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@customer.com\",\n  \"password\": \"Password@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET Customer Profile with KYC Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "PUT Update KYC Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"panNumber\": \"ALICE1234X\",\n  \"aadhaarNumber\": \"777788889999\",\n  \"address\": \"Penthouse 12, Palm Meadows, Bangalore\",\n  \"annualIncome\": 2800000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/kyc",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "kyc"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 2: Account Approval Workflow",
+      "item": [
+        {
+          "name": "POST Bank Staff Login (Get Staff JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('staffToken', json.data.token);",
+                  "pm.test('Staff JWT saved', function () {",
+                  "    pm.expect(json.data.user.role).to.eql('STAFF');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"staff@digitalbank.com\",\n  \"password\": \"Password@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET Staff View Pending Applications Queue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.accounts && json.data.accounts.length > 0) {",
+                  "    pm.collectionVariables.set('newApplicantAccountId', json.data.accounts[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff/pending-accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", "pending-accounts"]
+            }
+          }
+        },
+        {
+          "name": "PUT Staff Approves Account (Sample Spec Endpoint)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Status is Approved and audit record generated', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql('Approved');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Approved\",\n  \"remarks\": \"Reviewed and confirmed by authorized role\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{newApplicantAccountId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{newApplicantAccountId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "GET Account Audit Trail (Approvals / Decisions History)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff/audit-trail/{{newApplicantAccountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", "audit-trail", "{{newApplicantAccountId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 3: Account Management",
+      "item": [
+        {
+          "name": "POST Apply for New Savings Account (starts PENDING_APPROVAL)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('newApplicantAccountId', json.data.account._id);",
+                  "pm.test('Account created in PENDING_APPROVAL status', function () {",
+                  "    pm.expect(json.data.account.status).to.eql('PENDING_APPROVAL');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SAVINGS\",\n  \"initialDeposit\": 3000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"]
+            }
+          }
+        },
+        {
+          "name": "GET Get Customer Accounts (Savings & Current with Balances)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "var activeAcc = json.data.accounts.find(a => a.status === 'ACTIVE');",
+                  "if (activeAcc) {",
+                  "    pm.collectionVariables.set('aliceAccountId', activeAcc._id);",
+                  "    pm.collectionVariables.set('aliceSavingsAccNum', activeAcc.accountNumber);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"]
+            }
+          }
+        },
+        {
+          "name": "GET Get Account By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{aliceAccountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{aliceAccountId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 4: Beneficiary Management",
+      "item": [
+        {
+          "name": "POST Add Trusted Beneficiary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created or 409 Duplicate', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountId\": \"{{aliceAccountId}}\",\n  \"beneficiaryAccountNumber\": \"{{bobSavingsAccNum}}\",\n  \"beneficiaryName\": \"Bob Patel\",\n  \"nickname\": \"Bob Office\",\n  \"bankName\": \"Global Digital Bank\",\n  \"ifscCode\": \"GDBK0001001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/beneficiaries",
+              "host": ["{{baseUrl}}"],
+              "path": ["beneficiaries"]
+            }
+          }
+        },
+        {
+          "name": "GET List Beneficiaries for Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/beneficiaries",
+              "host": ["{{baseUrl}}"],
+              "path": ["beneficiaries"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 5: Fund Transfer Engine",
+      "item": [
+        {
+          "name": "POST Transfer Funds (Atomic Balances + Double-Entry)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Atomic balances updated and reference number generated', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.referenceNumber).to.be.a('string');",
+                  "    pm.expect(json.data.amount).to.eql(2500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"{{aliceSavingsAccNum}}\",\n  \"toAccountNumber\": \"{{bobSavingsAccNum}}\",\n  \"amount\": 2500,\n  \"description\": \"Consulting fee settlement\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "transfer"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 6: Transaction Ledger",
+      "item": [
+        {
+          "name": "GET Immutable Account Ledger (Running balanceAfter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Ledger transactions have balanceAfter', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.transactions.length).to.be.above(0);",
+                  "    pm.expect(json.data.transactions[0].balanceAfter).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{aliceAccountId}}/ledger",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{aliceAccountId}}", "ledger"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 7: Account Statement Generation",
+      "item": [
+        {
+          "name": "GET Generate Date-Range Statement with Aggregates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Statement contains opening, closing balances and net flow', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.summary.openingBalance).to.be.a('number');",
+                  "    pm.expect(json.data.summary.closingBalance).to.be.a('number');",
+                  "    pm.expect(json.data.summary.netFlow).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{aliceAccountId}}/statement?startDate=2026-01-01&endDate=2026-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{aliceAccountId}}", "statement"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-12-31"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 8: Minimum Balance & Limits Enforcement",
+      "item": [
+        {
+          "name": "POST Violation Test - Overdraft below Minimum Balance (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code is MINIMUM_BALANCE_VIOLATION', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.errorCode).to.eql('MINIMUM_BALANCE_VIOLATION');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"{{aliceSavingsAccNum}}\",\n  \"toAccountNumber\": \"{{bobSavingsAccNum}}\",\n  \"amount\": 999999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "transfer"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 9: Suspicious Transaction Flagging",
+      "item": [
+        {
+          "name": "POST High-Value Transfer > 50,000 (Triggers AML Flag)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Transaction marked flagged: true for AML monitoring', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.flagged).to.be.true;",
+                  "    pm.expect(json.data.flagReason).to.include('monitoring threshold');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"1008001002\",\n  \"toAccountNumber\": \"{{bobSavingsAccNum}}\",\n  \"amount\": 55000,\n  \"description\": \"Equipment bulk purchase\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "transfer"]
+            }
+          }
+        },
+        {
+          "name": "GET View Flagged Transactions Queue (Sample Spec Endpoint)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns flagged transactions list', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.count).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff/flagged-transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", "flagged-transactions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 10: Account Freeze & Unfreeze Module",
+      "item": [
+        {
+          "name": "PUT Staff Freeze Account (Sample Spec Endpoint)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Account status is FROZEN', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql('FROZEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Suspicious rapid transfers, freezing account pending audit\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{newApplicantAccountId}}/freeze",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{newApplicantAccountId}}", "freeze"]
+            }
+          }
+        },
+        {
+          "name": "PUT Staff Unfreeze Account (Restores ACTIVE Status)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Account status restored to ACTIVE', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql('ACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Customer ID verification verified in branch. Freeze lifted.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{newApplicantAccountId}}/unfreeze",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{newApplicantAccountId}}", "unfreeze"]
+            }
+          }
+        },
+        {
+          "name": "POST Blocked Transfer from Frozen Account (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Error code is ACCOUNT_FROZEN or FORBIDDEN', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.errorCode).to.be.oneOf(['ACCOUNT_FROZEN', 'FORBIDDEN']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"1008002002\",\n  \"toAccountNumber\": \"{{aliceSavingsAccNum}}\",\n  \"amount\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "transfer"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 11: Interest Calculation Job Logic",
+      "item": [
+        {
+          "name": "POST Trigger Monthly Interest Accrual Batch Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Interest disbursed to active savings accounts', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.accountsCredited).to.be.above(0);",
+                  "    pm.expect(json.data.totalInterestDisbursed).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"periodMonths\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/calculate-interest",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "calculate-interest"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 12: Staff Monitoring Dashboard",
+      "item": [
+        {
+          "name": "GET Staff Monitoring Dashboard Metrics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns bank-wide liquidity and operational metrics', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.overview.totalCustomers).to.be.a('number');",
+                  "    pm.expect(json.data.overview.totalActiveLiquidity).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{staffToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 13: Role-Based Access Control (RBAC)",
+      "item": [
+        {
+          "name": "POST Bank Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('adminToken', json.data.token);",
+                  "pm.test('Admin JWT saved', function () {",
+                  "    pm.expect(json.data.user.role).to.eql('ADMIN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@digitalbank.com\",\n  \"password\": \"Password@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET RBAC Guard - Customer Blocked from Staff Route (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Error code is FORBIDDEN', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.errorCode).to.eql('FORBIDDEN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "GET Auth Guard - Missing Token Blocked (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Edge Cases & Error Handling Checklist",
+      "item": [
+        {
+          "name": "POST Missing Required Field Validation (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error code is VALIDATION_ERROR', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.errorCode).to.eql('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bad_request@test.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "GET Resource Not Found with Non-Existent ID (404 Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/64f1a2b3c4d5e6f7a8b9c0d1",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "64f1a2b3c4d5e6f7a8b9c0d1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
