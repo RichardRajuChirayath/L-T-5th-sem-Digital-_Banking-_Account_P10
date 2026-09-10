@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Digital Bank - Core Banking & Transaction Management</title>
+  <!-- Google Fonts & Bootstrap 5 & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark glass-nav sticky-top">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <div class="brand-badge"><i class="bi bi-bank2"></i></div>
+        <span class="brand-text">Apex<strong>Bank</strong></span>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2">Core Banking P10</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4" id="roleNavLinks">
+          <!-- Populated by JS based on user role -->
+        </ul>
+        <div class="d-flex align-items-center gap-3">
+          <div id="quickUserBadge" class="d-none small px-3 py-2 rounded-pill bg-white border border-gold-subtle shadow-sm">
+            <i class="bi bi-person-circle me-1 text-gold"></i> <span id="currentUserName" class="text-dark fw-semibold">User</span> (<span id="currentUserRole" class="text-gold fw-bold">ROLE</span>)
+          </div>
+          <button id="authBtn" class="btn btn-gold rounded-pill px-4" onclick="openLoginModal()">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container py-4">
+    <!-- Role Switcher Bar: Clean, Spacious, Elegant -->
+    <div class="card luxury-glass-card mb-4 border-0">
+      <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3 px-4 py-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-gold-subtle text-gold border border-gold-subtle px-3 py-2 rounded-pill fw-semibold">
+            <i class="bi bi-person-badge me-1"></i> Interactive Role Switcher
+          </span>
+          <span class="text-secondary small d-none d-md-inline ms-2">Switch between live test profiles:</span>
+        </div>
+        <div class="d-flex flex-wrap gap-2" role="group">
+          <button type="button" class="btn btn-outline-gold rounded-pill px-3 py-1 text-nowrap" onclick="quickLogin('alice@customer.com')">
+            <i class="bi bi-person-check me-1"></i> Customer (Alice)
+          </button>
+          <button type="button" class="btn btn-outline-gold rounded-pill px-3 py-1 text-nowrap" onclick="quickLogin('bob@customer.com')">
+            <i class="bi bi-person me-1"></i> Customer (Bob)
+          </button>
+          <button type="button" class="btn btn-outline-gold rounded-pill px-3 py-1 text-nowrap" onclick="quickLogin('staff@digitalbank.com')">
+            <i class="bi bi-shield-check me-1"></i> Operations Staff
+          </button>
+          <button type="button" class="btn btn-outline-gold rounded-pill px-3 py-1 text-nowrap" onclick="quickLogin('admin@digitalbank.com')">
+            <i class="bi bi-sliders me-1"></i> System Admin
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div id="statusAlert" class="alert d-none alert-dismissible fade show" role="alert">
+      <span id="alertMessage"></span>
+      <button type="button" class="btn-close" onclick="hideAlert()"></button>
+    </div>
+
+    <!-- VIEW: CUSTOMER DASHBOARD -->
+    <section id="customerView" class="view-section d-none">
+      <!-- Welcome & Summary Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card glass-card stat-card border-0 h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-secondary small text-uppercase fw-semibold">Total Liquidity</span>
+                <div class="icon-circle bg-success-subtle text-success"><i class="bi bi-wallet2"></i></div>
+              </div>
+              <h2 class="display-6 fw-bold mt-2 mb-0" id="custTotalBalance">₹0.00</h2>
+              <span class="text-muted small">Across active savings & current accounts</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card glass-card stat-card border-0 h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-secondary small text-uppercase fw-semibold">KYC Status</span>
+                <div class="icon-circle bg-info-subtle text-info"><i class="bi bi-patch-check"></i></div>
+              </div>
+              <h3 class="fw-bold mt-2 mb-0" id="custKycBadge">VERIFIED</h3>
+              <span class="text-muted small" id="custKycDetails">PAN & Aadhaar linked</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card glass-card stat-card border-0 h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-secondary small text-uppercase fw-semibold">Quick Actions</span>
+                <div class="icon-circle bg-primary-subtle text-primary"><i class="bi bi-send-check"></i></div>
+              </div>
+              <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm btn-primary flex-fill rounded-pill" onclick="openTransferModal()">
+                  <i class="bi bi-arrow-left-right me-1"></i> Transfer Funds
+                </button>
+                <button class="btn btn-sm btn-outline-light flex-fill rounded-pill" onclick="openNewAccountModal()">
+                  <i class="bi bi-plus-circle me-1"></i> Open Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accounts Section -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="card glass-card h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+              <h5 class="mb-0 fw-bold"><i class="bi bi-credit-card-2-front me-2 text-primary"></i>My Accounts</h5>
+              <span class="badge bg-secondary" id="accountsCountBadge">0 Accounts</span>
+            </div>
+            <div class="card-body" id="accountsListContainer">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card glass-card h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+              <h5 class="mb-0 fw-bold"><i class="bi bi-people me-2 text-info"></i>Beneficiaries</h5>
+              <button class="btn btn-sm btn-outline-info rounded-pill" onclick="openAddBeneficiaryModal()">
+                <i class="bi bi-plus"></i> Add
+              </button>
+            </div>
+            <div class="card-body p-0" id="beneficiariesListContainer">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction Ledger & Statement Viewer -->
+      <div class="card luxury-card border-0">
+        <div class="card-header bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2 py-3 px-4 border-bottom border-gold-subtle">
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2 text-gold"></i>Immutable Account Ledger</h5>
+            <span class="badge bg-gold-subtle text-gold border border-gold-subtle small px-3 py-1 rounded-pill">Double-Entry / Running Balance</span>
+          </div>
+          <div class="d-flex gap-2">
+            <select class="form-select form-select-sm bg-white text-dark border-gold-subtle rounded-pill px-3" id="ledgerAccountSelect" onchange="loadLedgerForSelectedAccount()">
+              <!-- Populated by JS -->
+            </select>
+            <button class="btn btn-sm btn-outline-gold rounded-pill px-3" onclick="openStatementModal()">
+              <i class="bi bi-file-earmark-pdf me-1"></i> Statement Filter
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 custom-luxury-table" id="ledgerTable">
+            <thead class="luxury-table-header">
+              <tr>
+                <th>Reference ID</th>
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Amount (₹)</th>
+                <th>Balance After (₹)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerTableBody">
+              <tr><td colspan="7" class="text-center py-4 text-muted">Select an account to load ledger entries</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: STAFF / ADMIN MONITORING DASHBOARD -->
+    <section id="staffView" class="view-section d-none">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="fw-bold mb-1"><i class="bi bi-shield-shaded me-2 text-warning"></i>Bank Staff & Operations Center</h3>
+          <p class="text-muted small mb-0">Review pending account applications, investigate flagged transactions, and trigger interest batch jobs.</p>
+        </div>
+        <button class="btn btn-warning rounded-pill px-4" onclick="triggerInterestJob()">
+          <i class="bi bi-percent me-1"></i> Run Interest Job
+        </button>
+      </div>
+
+      <!-- Staff Metric Highlights -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <div class="card glass-card border-0 p-3">
+            <span class="text-secondary small text-uppercase">Pending Approvals</span>
+            <h2 class="fw-bold text-warning mt-1 mb-0" id="metricPendingApprovals">0</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card glass-card border-0 p-3">
+            <span class="text-secondary small text-uppercase">Flagged Transactions</span>
+            <h2 class="fw-bold text-danger mt-1 mb-0" id="metricFlaggedCount">0</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card glass-card border-0 p-3">
+            <span class="text-secondary small text-uppercase">Active Accounts</span>
+            <h2 class="fw-bold text-success mt-1 mb-0" id="metricActiveAccounts">0</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card glass-card border-0 p-3">
+            <span class="text-secondary small text-uppercase">Total Bank Liquidity</span>
+            <h2 class="fw-bold text-info mt-1 mb-0" id="metricTotalLiquidity">₹0.00</h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Applications Queue (Module 2) -->
+      <div class="card luxury-card mb-4 border-0">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3 px-4 border-bottom border-gold-subtle">
+          <h5 class="mb-0 fw-bold"><i class="bi bi-inbox me-2 text-gold"></i>Pending Account Applications (Approval Workflow)</h5>
+          <button class="btn btn-sm btn-outline-gold rounded-pill px-3" onclick="loadStaffDashboard()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 custom-luxury-table">
+            <thead class="luxury-table-header">
+              <tr>
+                <th>Applicant Name</th>
+                <th>Contact</th>
+                <th>Account Type</th>
+                <th>Initial Deposit</th>
+                <th>KYC Details</th>
+                <th>Applied On</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pendingApplicationsTableBody">
+              <tr><td colspan="7" class="text-center py-4 text-muted">Loading pending applications...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Flagged Suspicious Transactions Queue (Module 9 & 12) -->
+      <div class="card luxury-card border-0">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3 px-4 border-bottom border-gold-subtle">
+          <h5 class="mb-0 fw-bold text-danger"><i class="bi bi-exclamation-octagon me-2"></i>Flagged Suspicious Activity (AML / High Value Threshold)</h5>
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">Threshold: > ₹50,000</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 custom-luxury-table">
+            <thead class="luxury-table-header">
+              <tr>
+                <th>Ref ID</th>
+                <th>Source Account</th>
+                <th>Beneficiary / Counterparty</th>
+                <th>Amount (₹)</th>
+                <th>Flag Reason</th>
+                <th>Timestamp</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="flaggedTransactionsTableBody">
+              <tr><td colspan="7" class="text-center py-4 text-muted">No flagged transactions</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: DEFAULT PUBLIC / SIGN-IN PROMPT -->
+    <section id="guestView" class="view-section py-5 text-center">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+          <div class="luxury-hero-card p-5 rounded-4 shadow-lg border-0">
+            <div class="luxury-emblem mx-auto mb-4">
+              <i class="bi bi-bank2 text-gold"></i>
+            </div>
+            <span class="badge bg-gold-subtle text-gold border border-gold-subtle rounded-pill px-3 py-2 mb-3 small fw-semibold">
+              Enterprise Core Banking Platform
+            </span>
+            <h1 class="fw-bold mb-3 display-6 tracking-tight">Apex Core Banking System</h1>
+            <p class="text-secondary mb-4 fs-6 px-md-4 leading-relaxed">
+              Engineered with an immutable double-entry transaction ledger, rigorous KYC onboarding, 
+              strict role-based security boundaries, and automated compliance auditing.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-3 pt-2">
+              <button class="btn btn-gold btn-lg rounded-pill px-5 py-2 shadow-sm" onclick="openLoginModal()">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Access Portal
+              </button>
+              <button class="btn btn-outline-cream btn-lg rounded-pill px-4 py-2" onclick="openRegisterModal()">
+                <i class="bi bi-person-plus me-2"></i> Open Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODALS -->
+  <!-- 1. Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-modal text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i>Sign In</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Email Address</label>
+              <input type="email" id="loginEmail" class="form-control bg-dark text-light border-secondary" required placeholder="user@domain.com">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Password</label>
+              <input type="password" id="loginPassword" class="form-control bg-dark text-light border-secondary" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 mt-2">Sign In</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Transfer Modal -->
+  <div class="modal fade" id="transferModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-modal text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Transfer Funds</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="transferForm" onsubmit="handleTransferSubmit(event)">
+            <div class="mb-3">
+              <label class="form-label small text-secondary">From Account</label>
+              <select id="transferFromAccount" class="form-select bg-dark text-light border-secondary" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">To Account Number</label>
+              <input type="text" id="transferToAccount" class="form-control bg-dark text-light border-secondary" required placeholder="10-digit Account Number">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Transfer Amount (₹)</label>
+              <input type="number" id="transferAmount" class="form-control bg-dark text-light border-secondary" min="1" required placeholder="e.g. 5000">
+              <div class="form-text text-secondary small">Note: Amounts &ge; ₹50,000 will be automatically flagged for AML monitoring.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Remarks / Description</label>
+              <input type="text" id="transferDescription" class="form-control bg-dark text-light border-secondary" placeholder="e.g. Project consultation fee">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Execute Transfer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. New Account Application Modal -->
+  <div class="modal fade" id="newAccountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-modal text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2 text-success"></i>Open New Account</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="newAccountForm" onsubmit="handleNewAccountSubmit(event)">
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Account Type</label>
+              <select id="newAccountType" class="form-select bg-dark text-light border-secondary">
+                <option value="SAVINGS">Savings Account (Min ₹1,000 | 4.0% p.a.)</option>
+                <option value="CURRENT">Current Account (Min ₹5,000)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Initial Deposit (₹)</label>
+              <input type="number" id="newAccountDeposit" class="form-control bg-dark text-light border-secondary" min="1000" required value="2000">
+            </div>
+            <button type="submit" class="btn btn-success w-100 rounded-pill py-2">Submit Application</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Add Beneficiary Modal -->
+  <div class="modal fade" id="beneficiaryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-modal text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2 text-info"></i>Add Trusted Beneficiary</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="beneficiaryForm" onsubmit="handleAddBeneficiarySubmit(event)">
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Link from Source Account</label>
+              <select id="benSourceAccount" class="form-select bg-dark text-light border-secondary" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Beneficiary Account Number</label>
+              <input type="text" id="benAccountNumber" class="form-control bg-dark text-light border-secondary" required placeholder="10-digit number">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Beneficiary Full Name</label>
+              <input type="text" id="benName" class="form-control bg-dark text-light border-secondary" required placeholder="Legal full name">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">Nickname</label>
+              <input type="text" id="benNickname" class="form-control bg-dark text-light border-secondary" placeholder="e.g. Bob Office">
+            </div>
+            <button type="submit" class="btn btn-info w-100 rounded-pill py-2">Save Beneficiary</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Statement Filter Modal -->
+  <div class="modal fade" id="statementModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content glass-modal text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2 text-warning"></i>Account Statement Generator</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form class="row g-2 align-items-end mb-4" onsubmit="handleGenerateStatement(event)">
+            <div class="col-md-4">
+              <label class="form-label small text-secondary">Start Date</label>
+              <input type="date" id="stmtStartDate" class="form-control bg-dark text-light border-secondary">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small text-secondary">End Date</label>
+              <input type="date" id="stmtEndDate" class="form-control bg-dark text-light border-secondary">
+            </div>
+            <div class="col-md-4">
+              <button type="submit" class="btn btn-warning w-100 rounded-pill">Generate Statement</button>
+            </div>
+          </form>
+
+          <div id="statementSummaryBox" class="p-3 bg-dark-surface rounded-3 border border-secondary mb-3 d-none">
+            <div class="row g-2 text-center">
+              <div class="col-3">
+                <div class="text-secondary small">Opening Balance</div>
+                <div class="fw-bold" id="stmtOpeningBal">₹0.00</div>
+              </div>
+              <div class="col-3">
+                <div class="text-success small">Total Credits (+)</div>
+                <div class="fw-bold text-success" id="stmtCredits">₹0.00</div>
+              </div>
+              <div class="col-3">
+                <div class="text-danger small">Total Debits (-)</div>
+                <div class="fw-bold text-danger" id="stmtDebits">₹0.00</div>
+              </div>
+              <div class="col-3">
+                <div class="text-info small">Closing Balance</div>
+                <div class="fw-bold text-info" id="stmtClosingBal">₹0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="max-height: 320px;">
+            <table class="table table-sm table-dark table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Ref ID</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Balance After</th>
+                </tr>
+              </thead>
+              <tbody id="statementTableBody">
+                <tr><td colspan="6" class="text-center py-3 text-muted">Click 'Generate Statement' to load</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
